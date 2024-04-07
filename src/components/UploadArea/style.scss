@@ -1,0 +1,16 @@
+.upload-area {
+  border: 2px dashed lightgray;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  padding: 14px 14px;
+  cursor: pointer;
+  user-select: none;
+}
+  .upload-area > div:first-child {
+    font-weight: bold;
+  }
+  .upload-area > div:last-child {
+    color: gray;
+  }

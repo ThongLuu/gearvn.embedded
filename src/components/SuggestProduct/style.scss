@@ -1,0 +1,24 @@
+.filter-button-container {
+    gap: 5px;
+    overflow: auto;
+    scrollbar-width: none;
+    white-space: nowrap;
+    display: flex;
+}
+
+.filter-title {
+    margin-bottom: .5rem;
+    margin-top: .5rem;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.search-input {
+    >span {
+        width: 100%;
+
+        >input {
+            width: 100%;
+        }
+    }
+}

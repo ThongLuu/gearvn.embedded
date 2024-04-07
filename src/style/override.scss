@@ -1,0 +1,124 @@
+body {
+  background-color: #3B3E47;
+}
+
+.g-profile {
+  background-color: white !important;
+  border-radius: 10%;
+}
+
+.g-storage {
+  border-top: 1px solid white;
+  border-bottom: 1px solid white;
+  background-color: #c70;
+  > * > * {
+    color: white;
+  }
+}
+
+.p-text-bold {
+  font-weight: 700 !important;
+}
+
+b {
+  font-weight: 700 !important;
+}
+
+td {
+  vertical-align: top;
+  white-space: unset !important;
+}
+
+th {
+  vertical-align: top;
+  text-transform: uppercase;
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
+  > * > * {
+    font-size: 0.85em;
+    font-weight: 650 !important;
+  }
+}
+
+.p-card-body {
+  padding: 1rem !important;
+}
+
+.card-content {
+  padding: 0 0 !important;
+}
+
+.grid {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+  margin-top: 0 !important;
+}
+
+.field {
+  > * {
+    width: 100%;
+    > * {
+      width: 100%;
+    }
+  }
+}
+
+.p-inputtext:focus {
+  box-shadow: 0 0 !important;
+}
+
+.p-focus {
+  box-shadow: 0 0 !important;
+}
+
+.p-card .p-card-title {
+  font-weight: 500;
+}
+
+.p-message {
+  margin: 0 0 !important;
+}
+
+.table-noheader {
+  div > table > thead > tr {
+    display: none !important;
+  }
+}
+
+.g-table-row-disable {
+  background-color: var(--surface-200) !important;
+}
+
+.g-subtable {
+  // border-left: 4px solid var(--surface-50) !important;
+  > * {
+    background-color: var(--surface-100);
+    > * {
+      background-color: var(--surface-100);
+      > * {
+        background-color: var(--surface-100);
+        > * {
+          background-color: var(--surface-100);
+          > * {
+            background-color: var(--surface-100);
+            > * {
+              background-color: var(--surface-100);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.p-card-noshadow {
+  box-shadow: none !important;
+}
+
+.p-autocomplete-loader {
+  display: none !important;
+}
+
+//
+// Table
+//

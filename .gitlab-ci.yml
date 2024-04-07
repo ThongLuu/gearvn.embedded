@@ -1,0 +1,160 @@
+stages:
+  - before_build
+  - cleanup_build
+  - cleanup_build_beta
+  - install_aws
+  - build
+  - deploy_staging
+  - deploy_beta
+  - cleanup_build_main
+  - package_deploy
+  - deploy
+
+before_script:
+  - eval $DOCKER_ENV
+  - docker info
+  # - echo  $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin $DOCKER_REGISTER
+  - docker images
+
+# ================== BUILD STAGING ===================
+
+build_staging:
+  stage: build
+  tags: ["STAGING"]
+  script:
+    - echo "Building server"
+    - docker build -t gearvn.dms.web:$CI_PIPELINE_IID .
+  only: ["staging"]
+
+cleanup_build_staging:
+  stage: cleanup_build
+  tags: ["STAGING"]
+  allow_failure: true
+  script:
+    - echo "Clear old build in server"
+    - docker stop $(docker ps -a | grep "gearvn_dms_web" | awk "{print \$1}")
+    - docker rm $(docker ps -a | grep "gearvn_dms_web" | awk "{print \$1}")
+    - docker rmi -f $(docker images | grep "gearvn.dms.web" | awk "{print \$3}")
+    # - docker rmi -f $(docker images | grep "<none>" | awk "{print \$3}")
+  only: ["staging"]
+
+deploy_staging:
+  stage: deploy_staging
+  tags: ["STAGING"]
+  script:
+    - eval $QA_ENV
+    - echo "Deploy to staging server"
+    - docker run --restart=always -it -d --network host -e PORT=$PORT -e ORDER_HOST=$ORDER_HOST -e GOOGLE_MAP_API_KEY=$GOOGLE_MAP_API_KEY -e LOGIN_OAUTH_DOMAIN=$LOGIN_OAUTH_DOMAIN -e LOGIN_REGION=$LOGIN_REGION -e LOGIN_USER_POOL_ID=$LOGIN_USER_POOL_ID -e LOGIN_APP_CLIENT_ID=$LOGIN_APP_CLIENT_ID -e IDENTITY_POOL=$IDENTITY_POOL -e BACKEND_AUTH=$BACKEND_AUTH -e BACKEND_HOST=$BACKEND_HOST -e PRINTER_ADDR=$PRINTER_ADDR -e AUTH_HOST=$AUTH_HOST --name gearvn_dms_web gearvn.dms.web:$CI_PIPELINE_IID
+  only: ["staging"]
+
+# ================== BUILD BETA ===================
+cleanup_build_beta:
+  stage: cleanup_build_beta
+  tags: ["web-beta"]
+  allow_failure: true
+  script:
+    - echo "Clear old build in server"
+    - docker stop $(docker ps -a | grep "gearvn_dms_web" | awk "{print \$1}")
+    - docker rm $(docker ps -a | grep "gearvn_dms_web" | awk "{print \$1}")
+    - docker rmi -f $(docker images | grep "gearvn.dms.web" | awk "{print \$3}")
+  only: ["beta"]
+
+# install_aws_beta:
+#   stage: install_aws
+#   tags: ["web-beta"]
+#   script:
+#     - apk add --no-cache curl jq python py-pip
+#     - pip install awscli
+#     - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+#     - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+#     - aws configure set region $AWS_DEFAULT_REGION
+#     - $(aws ecr get-login --no-include-email --region "${AWS_DEFAULT_REGION}")
+#     - IMAGE_TAG="$(echo $CI_COMMIT_SHA | head -c 8)"
+#   only: ["beta"]
+
+build_beta:
+  stage: build
+  tags: ["web-beta"]
+  script:
+    - eval $BETA_ENV
+    - echo "Building image..."
+    - docker build -t $REPOSITORY_URL:latest .
+    - echo "Tagging image..."
+    - docker tag $REPOSITORY_URL:latest $REPOSITORY_URL:$IMAGE_TAG
+    - echo "Pushing image..."
+    - docker push $REPOSITORY_URL:latest
+    - docker push $REPOSITORY_URL:$IMAGE_TAG
+  only: ["beta"]
+
+before_build_beta:
+  stage: before_build
+  tags: ["web-beta"]
+  script:
+    - echo  $DOCKER_PASSWORD | docker login  $USE_TTY -u $DOCKER_USER --password-stdin $DOCKER_REGISTER
+  only: ["beta"]
+
+review_production:
+  stage: deploy_beta
+  tags: ["web-beta"]
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - eval $BETA_ENV
+    - echo "Deploy to beta server"
+    #- docker run --restart=always -it -d --network host -e PORT=$PORT -e ORDER_HOST=$ORDER_HOST -e GOOGLE_MAP_API_KEY=$GOOGLE_MAP_API_KEY -e LOGIN_OAUTH_DOMAIN=$LOGIN_OAUTH_DOMAIN -e LOGIN_REGION=$LOGIN_REGION -e LOGIN_USER_POOL_ID=$LOGIN_USER_POOL_ID -e LOGIN_APP_CLIENT_ID=$LOGIN_APP_CLIENT_ID -e IDENTITY_POOL=$IDENTITY_POOL -e BACKEND_AUTH=$BACKEND_AUTH -e BACKEND_HOST=$BACKEND_HOST -e PRINTER_ADDR=$PRINTER_ADDR -e AUTH_HOST=$AUTH_HOST --name gearvn_dms_web $DOCKER_REGISTER/gearvn.dms.web:$CI_COMMIT_SHORT_SHA
+    - docker run --restart=always -it -d --network host -e PORT=$PORT -e ORDER_HOST=$ORDER_HOST -e GOOGLE_MAP_API_KEY=$GOOGLE_MAP_API_KEY -e LOGIN_OAUTH_DOMAIN=$LOGIN_OAUTH_DOMAIN -e LOGIN_REGION=$LOGIN_REGION -e LOGIN_USER_POOL_ID=$LOGIN_USER_POOL_ID -e LOGIN_APP_CLIENT_ID=$LOGIN_APP_CLIENT_ID -e IDENTITY_POOL=$IDENTITY_POOL -e BACKEND_AUTH=$BACKEND_AUTH -e BACKEND_HOST=$BACKEND_HOST -e PRINTER_ADDR=$PRINTER_ADDR -e AUTH_HOST=$AUTH_HOST --name gearvn_dms_web $REPOSITORY_URL:latest
+  only: ["beta"]
+
+# ================== BUILD PRODUCT ===================
+cleanup_build_product:
+  stage: cleanup_build_main
+  tags: ["production"]
+  allow_failure: true
+  script:
+    - echo "Clear old build in server"
+    - docker stop $(docker ps -a | grep "gearvn_dms_web" | awk "{print \$1}")
+    - docker rm $(docker ps -a | grep "gearvn_dms_web" | awk "{print \$1}")
+    - docker rmi -f $(docker images | grep "gearvn.dms.web" | awk "{print \$3}")
+  only: ["main"]
+
+# package_build_production:
+#   stage: build
+#   tags: ["production"]
+#   script:
+#     - echo "Building server"
+#     - echo  $CI_COMMIT_SHORT_SHA
+#     #- docker build -t $DOCKER_REGISTER/gearvn.dms.web:$CI_COMMIT_SHORT_SHA .
+#     #- docker push $DOCKER_REGISTER/gearvn.dms.web:$CI_COMMIT_SHORT_SHA
+#     - docker build -t gearvn.dms.web:$CI_COMMIT_SHORT_SHA .
+#     #- docker push gearvn.dms.web:$CI_COMMIT_SHORT_SHA
+#   only: ["main"]
+
+package_deploy_production:
+  stage: package_deploy
+  variables:
+    GIT_STRATEGY: none
+  tags: ["production"]
+  script:
+    - echo $CI_COMMIT_SHORT_SHA
+    - echo $git_tag
+    #- docker pull $DOCKER_REGISTER/gearvn.dms.web:$CI_COMMIT_SHORT_SHA
+    #- docker tag $DOCKER_REGISTER/gearvn.dms.web:$CI_COMMIT_SHORT_SHA $DOCKER_REGISTER/gearvn.dms.web:latest
+    #- docker push $DOCKER_REGISTER/gearvn.dms.web:latest
+    - docker pull gearvn.dms.web:$CI_COMMIT_SHORT_SHA
+    - docker tag gearvn.dms.web:$CI_COMMIT_SHORT_SHA gearvn.dms.web:latest
+    - docker push gearvn.dms.web:latest
+  only: ["main"]
+
+deploy_production:
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+  tags: ["production"]
+  script:
+    - eval $PROD_ENV
+    - echo "Deploy to production server"
+    #- docker pull $DOCKER_REGISTER/gearvn.dms.web:latest
+    #- docker run --restart=always -it -d --network host -e PORT=$PORT -e ORDER_HOST=$ORDER_HOST -e GOOGLE_MAP_API_KEY=$GOOGLE_MAP_API_KEY -e LOGIN_OAUTH_DOMAIN=$LOGIN_OAUTH_DOMAIN -e LOGIN_REGION=$LOGIN_REGION -e LOGIN_USER_POOL_ID=$LOGIN_USER_POOL_ID -e LOGIN_APP_CLIENT_ID=$LOGIN_APP_CLIENT_ID -e IDENTITY_POOL=$IDENTITY_POOL -e BACKEND_AUTH=$BACKEND_AUTH -e BACKEND_HOST=$BACKEND_HOST -e PRINTER_ADDR=$PRINTER_ADDR -e AUTH_HOST=$AUTH_HOST --name gearvn_dms_web $DOCKER_REGISTER/gearvn.dms.web:latest
+    - docker run --restart=always -it -d --network host -e PORT=$PORT -e ORDER_HOST=$ORDER_HOST -e GOOGLE_MAP_API_KEY=$GOOGLE_MAP_API_KEY -e LOGIN_OAUTH_DOMAIN=$LOGIN_OAUTH_DOMAIN -e LOGIN_REGION=$LOGIN_REGION -e LOGIN_USER_POOL_ID=$LOGIN_USER_POOL_ID -e LOGIN_APP_CLIENT_ID=$LOGIN_APP_CLIENT_ID -e IDENTITY_POOL=$IDENTITY_POOL -e BACKEND_AUTH=$BACKEND_AUTH -e BACKEND_HOST=$BACKEND_HOST -e PRINTER_ADDR=$PRINTER_ADDR -e AUTH_HOST=$AUTH_HOST --name gearvn_dms_web gearvn.dms.web:latest
+  only: ["main"]
+

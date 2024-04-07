@@ -1,0 +1,47 @@
+body {
+  background-color: #fff !important;
+}
+
+.layout-wrapper {
+  background-color: #EAECF5 !important;
+}
+
+.layout-topbar {
+  background: white !important;
+  color: black !important;
+}
+
+.layout-footer {
+  background-color: white !important;
+  color: black !important;
+}
+
+.layout-menu-button {
+  color: black !important;
+}
+
+.layout-main {
+  padding: 66px 16px 16px 16px !important;
+}
+
+.g-bg-red {
+  background-color: rgb(255, 142, 142) !important;
+}
+.g-bg-yellow {
+  background-color: rgb(255, 255, 180) !important;
+}
+.g-bg-purple {
+  background-color: rgb(255, 151, 246) !important;
+}
+.g-bg-orange {
+  background-color: rgb(255, 207, 145) !important;
+}
+.g-bg-green {
+  background-color: rgb(140, 255, 140) !important;
+}
+.g-bg-blue {
+  background-color: rgb(196, 196, 255) !important;
+}
+.g-bg-gray {
+  background-color: rgb(173, 173, 173) !important;
+}

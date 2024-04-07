@@ -1,0 +1,28 @@
+.g-bg-red {
+  background-color: rgb(255, 93, 93) !important;
+  color: black;
+}
+.g-bg-yellow {
+  background-color: rgb(255, 255, 180) !important;
+  color: black;
+}
+.g-bg-purple {
+  background-color: rgb(219, 87, 208) !important;
+  color: black;
+}
+.g-bg-orange {
+  background-color: rgb(224, 148, 49) !important;
+  color: black;
+}
+.g-bg-green {
+  background-color: rgb(140, 255, 140) !important;
+  color: black;
+}
+.g-bg-blue {
+  background-color: rgb(146, 146, 255) !important;
+  color: black;
+}
+.g-bg-gray {
+  background-color: rgb(102, 102, 102) !important;
+  color: black;
+}
